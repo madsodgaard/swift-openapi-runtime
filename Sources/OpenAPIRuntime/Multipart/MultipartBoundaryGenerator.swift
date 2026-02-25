@@ -93,12 +93,9 @@ extension StringProtocol {
         with replacement: Replacement,
         maxReplacements: Int = .max
     ) -> String {
-        // Fast path: if the target is empty, there is nothing to replace.
         guard !target.isEmpty, maxReplacements > 0 else { return String(self) }
 
         var result = ""
-        // Reserve approximate capacity to minimize memory reallocations.
-        // Assuming the replacement is roughly the same size, this is highly efficient.
         result.reserveCapacity(self.count)
         
         var currentIndex = self.startIndex

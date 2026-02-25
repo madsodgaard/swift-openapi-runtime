@@ -64,6 +64,8 @@ extension QualityValue: RawRepresentable {
 
     /// The raw string representation of the `QualityValue`.
     public var rawValue: String {
+        // TODO: This should be revisisted
+
         // Fallback for infinity, NaN, or numbers too large for Int64 math
         guard doubleValue.isFinite, abs(doubleValue) < 9e14 else { return String(doubleValue) }
 

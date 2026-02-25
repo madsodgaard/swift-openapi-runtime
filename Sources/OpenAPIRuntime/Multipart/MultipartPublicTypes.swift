@@ -183,10 +183,7 @@ public final class MultipartBody<Part: Sendable>: @unchecked Sendable {
     private let sequence: AnySequence<Part>
 
     /// A lock for shared mutable state.
-    private let lock: NIOLock = {
-        let lock = NIOLock()
-        return lock
-    }()
+    private let lock = NIOLock()
 
     /// A flag indicating whether an iterator has already been created.
     private var locked_iteratorCreated: Bool = false
