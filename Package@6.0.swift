@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.0
 //===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftOpenAPIGenerator open source project
@@ -31,10 +31,6 @@ let package = Package(
             name: "OpenAPIRuntime",
             targets: ["OpenAPIRuntime"]
         )
-    ],
-    traits: [
-//        .default(enabledTraits: ["FullFoundationSupport"]),
-        .trait(name: "FullFoundationSupport"),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-http-types", from: "1.0.0"),

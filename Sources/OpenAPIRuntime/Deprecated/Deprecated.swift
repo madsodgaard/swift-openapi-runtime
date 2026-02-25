@@ -29,6 +29,7 @@ extension UndocumentedPayload {
 }
 
 extension Configuration {
+    #if FullFoundationSupport
     /// Creates a new configuration with the specified values.
     ///
     /// - Parameters:
@@ -63,6 +64,44 @@ extension Configuration {
             xmlCoder: xmlCoder
         )
     }
+    #else
+    /// Creates a new configuration with the specified values.
+    ///
+    /// - Parameters:
+    ///   - dateTranscoder: The transcoder to use when converting between date
+    ///   and string values.
+    ///   - multipartBoundaryGenerator: The generator to use when creating mutlipart bodies.
+    @available(*, deprecated, renamed: "init(dateTranscoder:multipartBoundaryGenerator:xmlCoder:)") @_disfavoredOverload
+    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+    public init(
+        dateTranscoder: any DateTranscoder = .iso8601,
+        multipartBoundaryGenerator: any MultipartBoundaryGenerator = .random
+    ) {
+        self.init(dateTranscoder: dateTranscoder, multipartBoundaryGenerator: multipartBoundaryGenerator, xmlCoder: nil)
+    }
+
+    /// Creates a new configuration with the specified values.
+    ///
+    /// - Parameters:
+    ///   - dateTranscoder: The transcoder to use when converting between date
+    ///   and string values.
+    ///   - multipartBoundaryGenerator: The generator to use when creating mutlipart bodies.
+    ///   - xmlCoder: Custom XML coder for encoding and decoding xml bodies. Only required when using XML body payloads.
+    @available(*, deprecated, renamed: "init(dateTranscoder:jsonEncodingOptions:multipartBoundaryGenerator:xmlCoder:)")
+    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+    @_disfavoredOverload public init(
+        dateTranscoder: any DateTranscoder = .iso8601,
+        multipartBoundaryGenerator: any MultipartBoundaryGenerator = .random,
+        xmlCoder: (any CustomCoder)? = nil
+    ) {
+        self.init(
+            dateTranscoder: dateTranscoder,
+            jsonEncodingOptions: [.sortedKeys, .prettyPrinted],
+            multipartBoundaryGenerator: multipartBoundaryGenerator,
+            xmlCoder: xmlCoder
+        )
+    }
+    #endif
 }
 
 extension AsyncSequence where Element == ArraySlice<UInt8>, Self: Sendable {

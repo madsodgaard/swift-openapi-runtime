@@ -12,7 +12,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Full Foundation needed for NSLock
 #if canImport(FoundationEssentials)
 public import FoundationEssentials
 #else
@@ -30,6 +29,7 @@ public protocol DateTranscoder: Sendable {
     func decode(_: String) throws -> Date
 }
 
+#if FullFoundationSupport
 /// A transcoder for dates encoded as an ISO-8601 string (in RFC 3339 format).
 public struct ISO8601DateTranscoder: DateTranscoder, @unchecked Sendable {
 
@@ -79,6 +79,36 @@ extension DateTranscoder where Self == ISO8601DateTranscoder {
         ISO8601DateTranscoder(options: [.withInternetDateTime, .withFractionalSeconds])
     }
 }
+#else
+/// A transcoder for dates encoded as an ISO-8601 string (in RFC 3339 format).
+@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+public struct ISO8601DateTranscoder: DateTranscoder, @unchecked Sendable {
+    private let options: Date.ISO8601FormatStyle
+
+    public init(options: Date.ISO8601FormatStyle = .iso8601) {
+        self.options = options
+    }
+
+    public func encode(_ date: Date) throws -> String {
+        date.formatted(options)
+    }
+    
+    public func decode(_ dateString: String) throws -> Date {
+        try self.options.parse(dateString)
+    }
+}
+
+@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+extension DateTranscoder where Self == ISO8601DateTranscoder {
+    /// A transcoder that transcodes dates as ISO-8601–formatted string (in RFC 3339 format).
+    public static var iso8601: Self { ISO8601DateTranscoder() }
+
+    /// A transcoder that transcodes dates as ISO-8601–formatted string (in RFC 3339 format) with fractional seconds.
+    public static var iso8601WithFractionalSeconds: Self {
+        ISO8601DateTranscoder(options: .iso8601.time(includingFractionalSeconds: true))
+    }
+}
+#endif
 
 extension JSONEncoder.DateEncodingStrategy {
     /// Encode the `Date` as a custom value encoded using the given ``DateTranscoder``.
@@ -158,6 +188,7 @@ public struct Configuration: Sendable {
     /// Custom XML coder for encoding and decoding xml bodies.
     public var xmlCoder: (any CustomCoder)?
 
+    #if FullFoundationSupport
     /// Creates a new configuration with the specified values.
     ///
     /// - Parameters:
@@ -177,4 +208,26 @@ public struct Configuration: Sendable {
         self.multipartBoundaryGenerator = multipartBoundaryGenerator
         self.xmlCoder = xmlCoder
     }
+    #else
+    /// Creates a new configuration with the specified values.
+    ///
+    /// - Parameters:
+    ///   - dateTranscoder: The transcoder to use when converting between date
+    ///   and string values.
+    ///   - jsonEncodingOptions: The options for the underlying JSON encoder.
+    ///   - multipartBoundaryGenerator: The generator to use when creating mutlipart bodies.
+    ///   - xmlCoder: Custom XML coder for encoding and decoding xml bodies. Only required when using XML body payloads.
+    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+    public init(
+        dateTranscoder: any DateTranscoder = .iso8601,
+        jsonEncodingOptions: JSONEncodingOptions = [.sortedKeys, .prettyPrinted],
+        multipartBoundaryGenerator: any MultipartBoundaryGenerator = .random,
+        xmlCoder: (any CustomCoder)? = nil
+    ) {
+        self.dateTranscoder = dateTranscoder
+        self.jsonEncodingOptions = jsonEncodingOptions
+        self.multipartBoundaryGenerator = multipartBoundaryGenerator
+        self.xmlCoder = xmlCoder
+    }
+    #endif
 }

@@ -18,9 +18,18 @@ import FoundationEssentials
 import Foundation
 #endif
 
-extension String {
+extension StringProtocol {
 
     /// Returns the string with leading and trailing whitespace (such as spaces
     /// and newlines) removed.
-    var trimmingLeadingAndTrailingSpaces: Self { trimmingCharacters(in: .whitespacesAndNewlines) }
+    var trimmingLeadingAndTrailingSpaces: String {
+        guard let startIndex = self.firstIndex(where: { !$0.isWhitespace }) else {
+            return ""
+        }
+
+        let endIndex = self.lastIndex(where: { !$0.isWhitespace })!
+
+        // Slice the original string and convert it back to a new String
+        return String(self[startIndex...endIndex])
+    }
 }

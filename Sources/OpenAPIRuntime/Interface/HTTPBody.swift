@@ -144,9 +144,8 @@ public final class HTTPBody: @unchecked Sendable {
     private let sequence: AnySequence<ByteChunk>
 
     /// A lock for shared mutable state.
-    private let lock: NSLock = {
-        let lock = NSLock()
-        lock.name = "com.apple.swift-openapi-generator.runtime.body"
+    private let lock: NIOLock = {
+        let lock = NIOLock()
         return lock
     }()
 

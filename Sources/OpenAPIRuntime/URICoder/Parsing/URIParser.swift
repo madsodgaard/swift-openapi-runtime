@@ -340,8 +340,57 @@ extension URIParser {
         spaceEscapingCharacter: URICoderConfiguration.SpaceEscapingCharacter
     ) -> Raw {
         // The inverse of URISerializer.computeSafeString.
-        let partiallyDecoded = escapedValue.replacingOccurrences(of: spaceEscapingCharacter.rawValue, with: " ")
-        return (partiallyDecoded.removingPercentEncoding ?? "")[...]
+
+        let spaceReplacementBytes = spaceEscapingCharacter.rawValue.utf8
+        let singleByteSpace = spaceReplacementBytes.count == 1 ? spaceReplacementBytes.first! : nil
+        let percent = UInt8(ascii: "%")
+        let space = UInt8(ascii: " ")
+        let utf8Buffer = escapedValue.utf8
+        let maxLength = utf8Buffer.count
+
+        let decodedString = withUnsafeTemporaryAllocation(of: UInt8.self, capacity: maxLength) { outputBuffer -> String? in
+            var i = 0
+            var byte: UInt8 = 0
+            var hexDigitsRequired = 0
+
+            for v in utf8Buffer {
+                if v == percent {
+                    guard hexDigitsRequired == 0 else {
+                        return nil
+                    }
+                    hexDigitsRequired = 2
+                } else if hexDigitsRequired > 0 {
+                    guard let hex = asciiToHex(v) else {
+                        return nil
+                    }
+
+                    if hexDigitsRequired == 2 {
+                        byte = hex << 4
+                    } else if hexDigitsRequired == 1 {
+                        byte += hex
+                        outputBuffer[i] = byte
+                        i += 1
+                        byte = 0
+                    }
+                    hexDigitsRequired -= 1
+                } else if let singleByteSpace, v == singleByteSpace {
+                    outputBuffer[i] = space
+                    i += 1
+                } else {
+                    outputBuffer[i] = v
+                    i += 1
+                }
+            }
+
+            guard hexDigitsRequired == 0 else {
+                return nil
+            }
+
+            return String(decoding: outputBuffer[..<i], as: UTF8.self)
+        }
+
+        let finalString = decodedString ?? ""
+        return finalString[...]
     }
 }
 
@@ -418,5 +467,19 @@ extension String.SubSequence {
             if currentChar == character { return finalize() } else { formIndex(after: &currentIndex) }
         }
         return finalize()
+    }
+}
+
+@inline(__always)
+fileprivate func asciiToHex(_ ascii: UInt8) -> UInt8? {
+    switch ascii {
+    case UInt8(ascii: "0")...UInt8(ascii: "9"):
+        return ascii - UInt8(ascii: "0")
+    case UInt8(ascii: "A")...UInt8(ascii: "F"):
+        return ascii - UInt8(ascii: "A") + 10
+    case UInt8(ascii: "a")...UInt8(ascii: "f"):
+        return ascii - UInt8(ascii: "a") + 10
+    default:
+        return nil
     }
 }

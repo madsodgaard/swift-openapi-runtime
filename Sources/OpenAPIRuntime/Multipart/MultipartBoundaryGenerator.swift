@@ -79,3 +79,51 @@ public struct RandomMultipartBoundaryGenerator: MultipartBoundaryGenerator {
         return boundaryPrefix.appending(String(decoding: randomSuffix, as: UTF8.self))
     }
 }
+
+#if !FullFoundationSupport
+extension StringProtocol {
+    @inlinable
+    func appending(_ other: some StringProtocol) -> String {
+        return String(self) + other
+    }
+
+    @inlinable
+    func replacingOccurrences<Target: StringProtocol, Replacement: StringProtocol>(
+        of target: Target,
+        with replacement: Replacement,
+        maxReplacements: Int = .max
+    ) -> String {
+        // Fast path: if the target is empty, there is nothing to replace.
+        guard !target.isEmpty, maxReplacements > 0 else { return String(self) }
+
+        var result = ""
+        // Reserve approximate capacity to minimize memory reallocations.
+        // Assuming the replacement is roughly the same size, this is highly efficient.
+        result.reserveCapacity(self.count)
+        
+        var currentIndex = self.startIndex
+        let end = self.endIndex
+        var replacementsCount = 0
+
+        while currentIndex < end {
+            if replacementsCount == maxReplacements {
+                result.append(contentsOf: self[currentIndex...])
+                break
+            }
+
+            let remainder = self[currentIndex...]
+
+            if remainder.starts(with: target) {
+                result += replacement
+                currentIndex = self.index(currentIndex, offsetBy: target.count)
+                replacementsCount += 1
+            } else {
+                result.append(self[currentIndex])
+                currentIndex = self.index(after: currentIndex)
+            }
+        }
+        
+        return result
+    }
+}
+#endif

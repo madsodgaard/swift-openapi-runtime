@@ -259,7 +259,7 @@ extension URISerializer {
     ) throws {
         guard !dictionary.isEmpty else { return }
         let sortedDictionary = dictionary.sorted { a, b in
-            a.key.localizedCaseInsensitiveCompare(b.key) == .orderedAscending
+            a.key.lowercased() < b.key.lowercased()
         }
 
         let keyAndValueSeparator: String

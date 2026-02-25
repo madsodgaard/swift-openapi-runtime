@@ -183,9 +183,8 @@ public final class MultipartBody<Part: Sendable>: @unchecked Sendable {
     private let sequence: AnySequence<Part>
 
     /// A lock for shared mutable state.
-    private let lock: NSLock = {
-        let lock = NSLock()
-        lock.name = "com.apple.swift-openapi-generator.runtime.multipart-body"
+    private let lock: NIOLock = {
+        let lock = NIOLock()
         return lock
     }()
 

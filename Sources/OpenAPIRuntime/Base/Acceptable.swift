@@ -63,7 +63,17 @@ extension QualityValue: RawRepresentable {
     }
 
     /// The raw string representation of the `QualityValue`.
-    public var rawValue: String { String(format: "%0.3f", doubleValue) }
+    public var rawValue: String {
+        // Fallback for infinity, NaN, or numbers too large for Int64 math
+        guard doubleValue.isFinite, abs(doubleValue) < 9e14 else { return String(doubleValue) }
+
+        // Scale by 1000 and round to exactly 3 decimal places
+        let scaled = Int64(abs(doubleValue * 1000).rounded())
+        let sign = doubleValue.sign == .minus ? "-" : ""
+
+        // Use integer math to slice the digits directly into the string
+        return "\(sign)\(scaled / 1000).\(scaled % 1000 / 100)\(scaled % 100 / 10)\(scaled % 10)"
+    }
 }
 
 extension QualityValue: ExpressibleByIntegerLiteral {

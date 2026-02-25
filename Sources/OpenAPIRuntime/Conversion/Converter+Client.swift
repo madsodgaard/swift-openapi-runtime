@@ -51,9 +51,14 @@ extension Converter {
         )
         for parameter in parameters {
             let value = try encoder.encode(parameter, forKey: "")
+            #if FullFoundationSupport
             if let range = renderedString.range(of: "{}") {
                 renderedString = renderedString.replacingOccurrences(of: "{}", with: value, range: range)
             }
+            #else
+            // Replacing one at a time
+            renderedString = renderedString.replacingOccurrences(of: "{}", with: value, maxReplacements: 1)
+            #endif
         }
         return renderedString
     }

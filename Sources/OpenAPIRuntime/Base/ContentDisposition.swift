@@ -107,15 +107,15 @@ extension ContentDisposition: RawRepresentable {
     /// https://datatracker.ietf.org/doc/html/rfc6266#section-4.1
     /// - Parameter rawValue: The raw value to use for the new instance.
     init?(rawValue: String) {
-        var components = rawValue.split(separator: ";").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        var components = rawValue.split(separator: ";").map { $0.trimmingLeadingAndTrailingSpaces }
         guard !components.isEmpty else { return nil }
         self.dispositionType = DispositionType(rawValue: components.removeFirst())
         let parameterTuples: [(ParameterName, String)] = components.compactMap {
             (component: String) -> (ParameterName, String)? in
             let parameterComponents = component.split(separator: "=", maxSplits: 1)
-                .map { $0.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) }
+                .map { $0.trimmingLeadingAndTrailingSpaces }
             guard parameterComponents.count == 2 else { return nil }
-            let valueWithoutQuotes = parameterComponents[1].trimmingCharacters(in: ["\""])
+            let valueWithoutQuotes = parameterComponents[1].trimming(character: "\"")
             return (.init(rawValue: parameterComponents[0]), valueWithoutQuotes)
         }
         self.parameters = Dictionary(parameterTuples, uniquingKeysWith: { a, b in a })
@@ -131,5 +131,22 @@ extension ContentDisposition: RawRepresentable {
             }
         }
         return string
+    }
+}
+
+extension StringProtocol {
+    /// Trims all leading and trailing occurrences of a specific character.
+    @inlinable
+    func trimming(character: Character) -> String {
+        // Find the first character that isn't the target
+        guard let startIndex = self.firstIndex(where: { $0 != character }) else {
+            return "" // The string is entirely made of the target character
+        }
+
+        // Find the last character that isn't the target
+        let endIndex = self.lastIndex(where: { $0 != character })!
+
+        // Slice and return the substring
+        return String(self[startIndex...endIndex])
     }
 }
