@@ -12,7 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 /// A generator of a new boundary string used by multipart messages to separate parts.
 public protocol MultipartBoundaryGenerator: Sendable {

@@ -12,8 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Full Foundation needed for NSNull
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 #if canImport(CoreFoundation)
 import CoreFoundation
 #endif

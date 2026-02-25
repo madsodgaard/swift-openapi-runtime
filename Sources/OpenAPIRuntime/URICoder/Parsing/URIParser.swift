@@ -12,7 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 /// A type that can parse a primitive, array, and a dictionary from a URI-encoded string.
 struct URIParser: Sendable {

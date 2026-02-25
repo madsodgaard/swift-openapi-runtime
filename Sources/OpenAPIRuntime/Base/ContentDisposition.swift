@@ -12,8 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Full Foundation needed for String.trimmingCharacters
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 /// A parsed representation of the `content-disposition` header described by RFC 6266 containing only
 /// the features relevant to OpenAPI multipart bodies.

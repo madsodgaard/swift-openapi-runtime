@@ -12,8 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Full Foundation needed for String(format:)
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 
 /// The protocol that all generated `AcceptableContentType` enums conform to.
 public protocol AcceptableProtocol: RawRepresentable, Sendable, Hashable, CaseIterable where RawValue == String {}

@@ -13,7 +13,11 @@
 //===----------------------------------------------------------------------===//
 
 // Full Foundation needed for NSLock
+#if canImport(FoundationEssentials)
+public import FoundationEssentials
+#else
 public import Foundation
+#endif
 
 /// A type that allows customization of Date encoding and decoding.
 ///
