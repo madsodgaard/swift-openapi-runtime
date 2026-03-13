@@ -18,7 +18,9 @@ import PackageDescription
 let swiftSettings: [SwiftSetting] = [
     // https://github.com/apple/swift-evolution/blob/main/proposals/0335-existential-any.md
     // Require `any` for existential types.
-    .enableUpcomingFeature("ExistentialAny")
+    .enableUpcomingFeature("ExistentialAny"),
+
+    .define("OPENAPI_MANIFEST_62"),
 ]
 
 let package = Package(
